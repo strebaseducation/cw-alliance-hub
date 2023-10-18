@@ -3,6 +3,8 @@ use cosmwasm_schema::{cw_serde, QueryResponses};
 use cosmwasm_std::{Addr, Decimal, Timestamp, Uint128};
 use cw_asset::{Asset, AssetInfo};
 use std::collections::{HashMap, HashSet};
+use cw20::Cw20ReceiveMsg;
+
 #[cw_serde]
 pub struct Config {
     pub governance: Addr,
@@ -30,6 +32,8 @@ pub struct InstantiateMsg {
 
 #[cw_serde]
 pub enum ExecuteMsg {
+    Receive(Cw20ReceiveMsg),
+
     // Public functions
     Stake {},
     Unstake(Asset),
@@ -45,6 +49,13 @@ pub enum ExecuteMsg {
     AllianceRedelegate(AllianceRedelegateMsg),
     RebalanceEmissions {},
     RebalanceEmissionsCallback {},
+    SetAssetRewardDistribution(Vec<AssetDistribution>),
+}
+
+#[cw_serde]
+pub enum Cw20HookMsg {
+    Stake {},
+    Unstake(Asset),
 }
 
 #[cw_serde]
