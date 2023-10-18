@@ -1,9 +1,9 @@
 use crate::alliance_oracle_types::ChainId;
 use cosmwasm_schema::{cw_serde, QueryResponses};
 use cosmwasm_std::{Addr, Decimal, Timestamp, Uint128};
+use cw20::Cw20ReceiveMsg;
 use cw_asset::{Asset, AssetInfo};
 use std::collections::{HashMap, HashSet};
-use cw20::Cw20ReceiveMsg;
 
 #[cw_serde]
 pub struct Config {

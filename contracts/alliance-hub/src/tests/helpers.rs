@@ -5,11 +5,11 @@ use crate::token_factory::CustomExecuteMsg;
 use alliance_protocol::alliance_oracle_types::ChainId;
 use alliance_protocol::alliance_protocol::{
     AllPendingRewardsQuery, AllianceDelegateMsg, AllianceDelegation, AllianceRedelegateMsg,
-    AllianceRedelegation, AllianceUndelegateMsg, AssetQuery, Config, ExecuteMsg, InstantiateMsg,
-    PendingRewardsRes, QueryMsg, StakedBalanceRes, Cw20HookMsg,
+    AllianceRedelegation, AllianceUndelegateMsg, AssetQuery, Config, Cw20HookMsg, ExecuteMsg,
+    InstantiateMsg, PendingRewardsRes, QueryMsg, StakedBalanceRes,
 };
 use cosmwasm_std::testing::{mock_env, mock_info};
-use cosmwasm_std::{coin, from_binary, Deps, DepsMut, Response, StdResult, Uint128, to_binary};
+use cosmwasm_std::{coin, from_binary, to_binary, Deps, DepsMut, Response, StdResult, Uint128};
 use cw20::Cw20ReceiveMsg;
 use cw_asset::{Asset, AssetInfo};
 use std::collections::HashMap;

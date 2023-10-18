@@ -2,32 +2,33 @@
 use cosmwasm_std::entry_point;
 
 // use alliance_protocol::alliance_oracle_types::QueryMsg as OracleQueryMsg;
+use alliance_protocol::alliance_oracle_types::ChainId;
 use alliance_protocol::alliance_protocol::{
     AllianceDelegateMsg, AllianceRedelegateMsg, AllianceUndelegateMsg, AssetDistribution, Config,
-    ExecuteMsg, InstantiateMsg, MigrateMsg, Cw20HookMsg,
+    Cw20HookMsg, ExecuteMsg, InstantiateMsg, MigrateMsg,
 };
 use cosmwasm_std::{
-    to_binary, Addr, Binary, Coin as CwCoin, CosmosMsg, Decimal, DepsMut, Empty, Env, MessageInfo,
-    Order, Reply, Response, StdError, StdResult, Storage, SubMsg, Timestamp, Uint128, WasmMsg, from_binary,
+    from_binary, to_binary, Addr, Binary, Coin as CwCoin, CosmosMsg, Decimal, DepsMut, Empty, Env,
+    MessageInfo, Order, Reply, Response, StdError, StdResult, Storage, SubMsg, Timestamp, Uint128,
+    WasmMsg,
 };
 use cw2::set_contract_version;
 use cw_asset::{Asset, AssetInfo, AssetInfoBase, AssetInfoKey};
 use cw_utils::parse_instantiate_response_data;
 use std::collections::{HashMap, HashSet};
-use alliance_protocol::alliance_oracle_types::ChainId;
 // use alliance_protocol::alliance_oracle_types::{AssetStaked, ChainId, EmissionsDistribution};
-use terra_proto_rs::alliance::alliance::{
-    MsgClaimDelegationRewards, MsgDelegate, MsgRedelegate, MsgUndelegate,
-};
-use terra_proto_rs::cosmos::base::v1beta1::Coin;
-use terra_proto_rs::traits::Message;
-use cw20::Cw20ReceiveMsg;
 use crate::error::ContractError;
 use crate::state::{
     ASSET_REWARD_DISTRIBUTION, ASSET_REWARD_RATE, BALANCES, CONFIG, TEMP_BALANCE, TOTAL_BALANCES,
     UNCLAIMED_REWARDS, USER_ASSET_REWARD_RATE, VALIDATORS, WHITELIST,
 };
 use crate::token_factory::{CustomExecuteMsg, DenomUnit, Metadata, TokenExecuteMsg};
+use cw20::Cw20ReceiveMsg;
+use terra_proto_rs::alliance::alliance::{
+    MsgClaimDelegationRewards, MsgDelegate, MsgRedelegate, MsgUndelegate,
+};
+use terra_proto_rs::cosmos::base::v1beta1::Coin;
+use terra_proto_rs::traits::Message;
 
 // version info for migration info
 const CONTRACT_NAME: &str = "crates.io:terra-alliance-protocol";
@@ -97,7 +98,7 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
     match msg {
-        // Enable support for staking and unstaking of Cw20Assets 
+        // Enable support for staking and unstaking of Cw20Assets
         ExecuteMsg::Receive(msg) => receive_cw20(deps, env, info, msg),
         ExecuteMsg::WhitelistAssets(assets) => whitelist_assets(deps, info, assets),
         ExecuteMsg::RemoveAssets(assets) => remove_assets(deps, info, assets),
@@ -109,8 +110,15 @@ pub fn execute(
                 return Err(ContractError::AmountCannotBeZero {});
             }
             let asset = AssetInfo::native(&info.funds[0].denom);
-            stake(deps, env, info.clone(), asset, info.funds[0].amount, info.sender)
-        },
+            stake(
+                deps,
+                env,
+                info.clone(),
+                asset,
+                info.funds[0].amount,
+                info.sender,
+            )
+        }
         ExecuteMsg::Unstake(asset) => unstake(deps, info, asset),
         ExecuteMsg::ClaimRewards(asset) => claim_rewards(deps, info, asset),
 
@@ -119,16 +127,19 @@ pub fn execute(
         ExecuteMsg::AllianceRedelegate(msg) => alliance_redelegate(deps, env, info, msg),
         ExecuteMsg::UpdateRewards {} => update_rewards(deps, env, info),
         ExecuteMsg::UpdateRewardsCallback {} => update_reward_callback(deps, env, info),
-        ExecuteMsg::SetAssetRewardDistribution(asset_reward_distribution) => set_asset_reward_distribution(deps, info, asset_reward_distribution),
+        ExecuteMsg::SetAssetRewardDistribution(asset_reward_distribution) => {
+            set_asset_reward_distribution(deps, info, asset_reward_distribution)
+        }
         // The below two ExecuteMsg are disabled with this variant. Instead of rebalancing emissions based on staking, it is manually configured through governance and can be reconfigured through the same method
         // ExecuteMsg::RebalanceEmissions {} => rebalance_emissions(deps, env, info),
         // ExecuteMsg::RebalanceEmissionsCallback {} => rebalance_emissions_callback(deps, env, info),
         // Allow Governance to overwrite the AssetDistributions for the reward emissions
         // Generic unsupported handler returns a StdError
-        _ => Err(ContractError::Std(StdError::generic_err("unsupported action"))), 
+        _ => Err(ContractError::Std(StdError::generic_err(
+            "unsupported action",
+        ))),
     }
 }
-
 
 // receive_cw20 routes a cw20 token to the proper handler in this case stake and unstake
 fn receive_cw20(
@@ -136,28 +147,26 @@ fn receive_cw20(
     env: Env,
     info: MessageInfo,
     cw20_msg: Cw20ReceiveMsg,
-)-> Result<Response, ContractError> {
+) -> Result<Response, ContractError> {
     let sender = deps.api.addr_validate(&cw20_msg.sender)?;
 
     match from_binary(&cw20_msg.msg)? {
-        Cw20HookMsg::Stake {  } => {
-
+        Cw20HookMsg::Stake {} => {
             if cw20_msg.amount.is_zero() {
                 return Err(ContractError::AmountCannotBeZero {});
             }
             let asset = AssetInfo::Cw20(info.sender.clone());
             stake(deps, env, info, asset, cw20_msg.amount, sender)
-        },
-        Cw20HookMsg::Unstake(asset) => 
-        {
-            unstake(deps, info, asset)
-        },
+        }
+        Cw20HookMsg::Unstake(asset) => unstake(deps, info, asset),
     }
 }
 
-fn set_asset_reward_distribution(deps:DepsMut,
-info: MessageInfo,
-asset_reward_distribution: Vec<AssetDistribution>) -> Result<Response, ContractError>{
+fn set_asset_reward_distribution(
+    deps: DepsMut,
+    info: MessageInfo,
+    asset_reward_distribution: Vec<AssetDistribution>,
+) -> Result<Response, ContractError> {
     let config = CONFIG.load(deps.storage)?;
     is_governance(&info, &config)?;
     // Simply set the asset_reward_distribution, overwriting any previous settings.
@@ -214,8 +223,14 @@ fn remove_assets(
     Ok(Response::new().add_attributes(vec![("action", "remove_assets"), ("assets", &assets_str)]))
 }
 
-fn stake(deps: DepsMut, _env: Env, info: MessageInfo, asset: AssetInfoBase<Addr>, amount: Uint128, sender:Addr) -> Result<Response, ContractError> {
-    
+fn stake(
+    deps: DepsMut,
+    _env: Env,
+    info: MessageInfo,
+    asset: AssetInfoBase<Addr>,
+    amount: Uint128,
+    sender: Addr,
+) -> Result<Response, ContractError> {
     let asset_key = AssetInfoKey::from(&asset);
     WHITELIST
         .load(deps.storage, asset_key.clone())
@@ -245,15 +260,17 @@ fn stake(deps: DepsMut, _env: Env, info: MessageInfo, asset: AssetInfoBase<Addr>
     TOTAL_BALANCES.update(
         deps.storage,
         asset_key.clone(),
-        |balance| -> Result<_, ContractError> {
-            Ok(balance.unwrap_or(Uint128::zero()) + amount)
-        },
+        |balance| -> Result<_, ContractError> { Ok(balance.unwrap_or(Uint128::zero()) + amount) },
     )?;
 
     let asset_reward_rate = ASSET_REWARD_RATE
         .load(deps.storage, asset_key.clone())
         .unwrap_or(Decimal::zero());
-    USER_ASSET_REWARD_RATE.save(deps.storage, (sender.clone(), asset_key), &asset_reward_rate)?;
+    USER_ASSET_REWARD_RATE.save(
+        deps.storage,
+        (sender.clone(), asset_key),
+        &asset_reward_rate,
+    )?;
 
     Ok(Response::new().add_attributes(vec![
         ("action", "stake"),
