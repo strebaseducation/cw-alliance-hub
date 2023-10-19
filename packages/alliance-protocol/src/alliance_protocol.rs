@@ -26,6 +26,7 @@ pub struct AssetDistribution {
 pub struct InstantiateMsg {
     pub governance: String,
     pub controller: String,
+    pub alliance_token_denom: String,
     pub oracle: String,
     pub reward_denom: String,
 }

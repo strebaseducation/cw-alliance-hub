@@ -24,6 +24,7 @@ pub fn setup_contract(deps: DepsMut) -> Response<CustomExecuteMsg> {
         governance: "gov".to_string(),
         controller: "controller".to_string(),
         oracle: "oracle".to_string(),
+        alliance_token_denom: "ualliance".to_string(),
         reward_denom: "uluna".to_string(),
     };
     instantiate(deps, env, info, init_msg).unwrap()

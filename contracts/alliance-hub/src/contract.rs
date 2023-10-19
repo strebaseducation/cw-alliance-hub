@@ -53,14 +53,14 @@ pub fn instantiate(
     let controller_address = deps.api.addr_validate(msg.controller.as_str())?;
     let oracle_address = deps.api.addr_validate(msg.oracle.as_str())?;
     let create_msg = TokenExecuteMsg::CreateDenom {
-        subdenom: "ualliance".to_string(),
+        subdenom: msg.alliance_token_denom.to_string(),
     };
     let sub_msg = SubMsg::reply_on_success(
         CosmosMsg::Custom(CustomExecuteMsg::Token(create_msg)),
         CREATE_REPLY_ID,
     );
 
-    // We set asset_reward_distribution here or manually via an executemethod otherwise there is no distribution ratio
+    // We set asset_reward_distribution here or manually via an execute method otherwise there is no distribution ratio
     // asset_reward_distribution is a list of AssetDistribution which is a struct that contains an AssetInfo and a Decimal.
     // ASSET_REWARD_DISTRIBUTION.save(deps.storage, &vec![
     //         AssetDistribution {
@@ -121,7 +121,7 @@ pub fn execute(
         }
         ExecuteMsg::Unstake(asset) => unstake(deps, info, asset),
         ExecuteMsg::ClaimRewards(asset) => claim_rewards(deps, info, asset),
-
+        // ualliance token delegation methods
         ExecuteMsg::AllianceDelegate(msg) => alliance_delegate(deps, env, info, msg),
         ExecuteMsg::AllianceUndelegate(msg) => alliance_undelegate(deps, env, info, msg),
         ExecuteMsg::AllianceRedelegate(msg) => alliance_redelegate(deps, env, info, msg),
@@ -169,6 +169,17 @@ fn set_asset_reward_distribution(
 ) -> Result<Response, ContractError> {
     let config = CONFIG.load(deps.storage)?;
     is_governance(&info, &config)?;
+
+    // Ensure the dsitributions add up to 100%
+    let total_distribution = asset_reward_distribution
+        .iter()
+        .map(|a| a.distribution)
+        .fold(Decimal::zero(), |acc, v| acc + v);
+
+    if total_distribution != Decimal::percent(100) {
+        return Err(ContractError::InvalidDistribution {});
+    }
+
     // Simply set the asset_reward_distribution, overwriting any previous settings.
     // This means any updates should include the full existing set of AssetDistributions and not just the newly updated one.
     ASSET_REWARD_DISTRIBUTION.save(deps.storage, &asset_reward_distribution)?;
