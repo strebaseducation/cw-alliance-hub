@@ -1,24 +1,139 @@
-# Benchmark 
-The smart contract has been deployed to [pisco-1 testnet](https://terrasco.pe/testnet/address/terra1uysfaxm4sjd7j35cw484w3ky3v6fkpffgrzv63mp6mj64xdamp2stf6hmt) and it has been benchmarked with the following data:
+# CW Alliance Hub Migaloo
+### Intent
 
-| Size   | Chains | Alliances | Data Size (kB) | Tx Cost (Luna) | Gas Used  |
-|--------|--------|-----------|----------------|----------------|-----------|
-| [XSmall](https://terrasco.pe/testnet/tx/4EFB6A2CA53C54449B303CF3C91593E161E12195E0C302E9504ECF67EBF00078)  | 8     | 16        | 5,5             | 0.406522       | 354,576   |
-| [Small](https://terrasco.pe/testnet/tx/D04758D0E6B1DF1B910ACB0473A3C232273A12D06A670CA0DB4AF53CA9981ECB)  | 16     | 32        | 11             | 0.667318       | 574,760   |
-| [Medium](https://terrasco.pe/testnet/tx/7BFCFDB5D378C58BFCF117660C57DC7C909D6EB45C316F86FFD4FD255EA8C5C7) | 32     | 64        | 21,9           | 1.188321       | 1,008,969 |
-| [Large](https://terrasco.pe/testnet/tx/3DF693DAC85B3D0EAFFFCA580031DD81D106F01CE582DC7EAB5D3C14F41F833E)  | 64     | 124       | 43,7           | 2.230764       | 1,877,682 |
-| [XLarge](https://terrasco.pe/testnet/tx/9BA0C5C18D6BC484112A7C15F5E1ECCBB4D80C1CF117895E08A375F182407325)  | 124     | 248       | 87,4           | 4.319313       | 3,615,282 |
+Stake idle CW20s for redirected inflation through Alliance
+Stake unbonded LP tokens for redirected inflation through Alliance
 
-Take in consideration that the XLarge dataset almost reach the limit of data we can submit on chain since the maximum gas for queries is 3 000 000 and the size of the data is quiet large. 
+For Chain
+Stimulate the economies of projects by redirecting some inflation to holders who stake their token based on configurable weighting.
 
-# Deployment Matix
+#### Contract methods 
 
-|        | Network             | CodeID | Contract Address                                                 |
-|--------|---------------------|--------|------------------------------------------------------------------|
-| Oracle | testnet (pisco-1)   | 10056   | [terra1w8ta7vhpzwe0y99tvvtp7k0k8uex2jq8jts8k2hsyg009ya06qts5fwftt](https://terrasco.pe/testnet/address/terra1w8ta7vhpzwe0y99tvvtp7k0k8uex2jq8jts8k2hsyg009ya06qts5fwftt) |
-| Hub    | testnet (pisco-1)   | 10047   | [terra1eaxcahzxp0x8wqejqjlqaey53tp06l728qad6z395lyzgl026qkq20xj43](https://terrasco.pe/testnet/address/terra1eaxcahzxp0x8wqejqjlqaey53tp06l728qad6z395lyzgl026qkq20xj43) |
-| Oracle | mainnet (phoenix-1) | 1782   | [terra1mdpvgjc8jmv60a4x68nggsh9w8uyv69sqls04a76m9med5hsqmwsse8sxa](https://chainsco.pe/terra2/address/terra1mdpvgjc8jmv60a4x68nggsh9w8uyv69sqls04a76m9med5hsqmwsse8sxa)                                                                 |
-| Hub    | mainnet (phoenix-1) | 1778   | [terra1jwyzzsaag4t0evnuukc35ysyrx9arzdde2kg9cld28alhjurtthq0prs2s](https://chainsco.pe/terra2/address/terra1jwyzzsaag4t0evnuukc35ysyrx9arzdde2kg9cld28alhjurtthq0prs2s)                                                                 |
+##### Instantiate 
+When instantiating a number of actor addrs must be provided for the governance, the controller and the oracle. These can all be set to the same address if desired but its split to allow better role based access
+
+```mermaid
+graph TD
+A(Asset Whitelisted) --> B(Holders of Asset can Stake)
+B --> C(Holders stake to contract)
+C --> D(Rewards Updated)
+D --> E(Stakers claim rewards for staked asset)
+```
+
+
+
+
+
+
+##### Whitelisting Assets 
+
+Assets are whitelisted before users can stake and unstake. 
+Additionally the reward distribution must be set for any whitelisted asset to receive some redirected inflation assets. 
+
+Whitelisting an asset is done by an admin/governance role and can be done like so: 
+
+```bash
+./migalood tx wasm execute migaloo14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s58v48z '{ "whitelist_assets": {"test-chain-GKFJpU": [{"cw20": "migaloo1xr3rq8yvd7qplsw5yx90ftsr2zdhg4e9z60h5duusgxpv72hud3s54xttx"}]}' --from new_deploy_wallet --gas auto --gas-adjustment 1.4
+```
+After which any holders of that asset can now stake and unstake. Rewards will only be accumulated if the asset is also included in the reward_distribution.
+
+##### Reward Distribution 
+The Reward Distribution represents a vector of assets and their respective weights for the sharing of the redirected inflation 
+The weights must add to 100% when being set. 
+
+Important to note reward distribution is separate from whitelisting for a reason. This enables assets to be whitelisted before any rewards are shared and additionally ensures rewards are independent of the whitelist.
+
+Also important to note setting new reward distributions is a one-hot operation that needs to be done with the entire list of distribution. 
+This removes any recalculation logic from the contract and enforces that the governance/admin actor must provide any updated rates and that despite updates they all add to 100%. 
+
+Example: 
+3 assets are whitelisted and a reward distribution is set at 33% for each. 
+```mermaid
+
+pie title ASSET_REWARD_DISTRIBUTION 
+		"Fable" : 33
+		"Racoon" : 33
+		"Ginkou" : 33
+```
+
+
+
+
+At some point in the future this reward distribution can be re-weighted 30,20,40 without touching the whitelist 
+```mermaid
+
+pie title ASSET_REWARD_DISTRIBUTION 
+		"Fable" : 30
+		"Racoon" : 30
+		"Ginkou" : 40
+```
+
+
+A fourth asset is whitelist and the reward distribution is set again: 
+
+```bash
+./migalood tx wasm execute migaloo14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s58v48z '{"set_asset_reward_distribution": [{"asset": {"native": "factory/addr/fable"}, "distribution": "0.25"}, {"asset":{"cw20":"migaloo1xr3rq8yvd7qplsw5yx90ftsr2zdhg4e9z60h5duusgxpv72hud3s54xttx"}, "distribution": "0.3"}, {"asset": {"cw20":"migaloo1anotherone"}, "distribution": "0.4"}, {"asset": {"native": "factory/migaloo1v767q4apajgksqlg5ejdakn8auszecje3yqfw6/fable"}, "distribution": "0.05"}]}'
+```
+
+The rewards for all assets have been updated at once
+```mermaid
+
+pie title ASSET_REWARD_DISTRIBUTION 
+		"Fable" : 25
+		"Racoon" : 30
+		"Ginkou" : 40
+		"anotherone": 5
+```
+
+
+##### Updating rewards
+Updating rewards is the process in which all earned rewards from the redirect inflation is tallied by querying the balance of the reward denom on the contract. 
+
+For each validator in the set VALIDATORS state item, an Alliance `MsgClaimDelegationRewards` is prepared to be sent as well as a UpdateRewardsCallback for the contract where newly received rewards will be allocated. 
+
+In the Callback, the amount of newly gained assets is tallied to determine the rewards_collected. 
+These rewards_collected are then allocated based on the assets distribution percent.
+If there are not balances for a given asset, no rate update happens which also means no emissions are redirected to them. 
+
+The above actions set an `ASSET_REWARD_RATE` for each asset which is then used when staking, unstaking or claiming via the `_claim_rewards`. All unclaimed rewards are gathered on stake, unstake and then claimed whenever claim_rewards is called.
+
+#### User facing methods
+
+##### Claiming rewards 
+Rewards claimable by a staker of a whitelisted asset can claim their earned rewards after the needed steps in [[Alliance Hub Migaloo#Updating Rewards]] have been performed. This should be done on some interval meaning rewards are being accumulated steadily. 
+
+Users in this scenario can claim their rewards one asset per time. 
+
+The asset that must be passed is an alias of `AssetInfoBase<Addr>` from cw-asset. It looks like so 
+
+```rust
+pub type AssetInfo = AssetInfoBase<Addr>;
+
+#[cw_serde]
+#[non_exhaustive]
+pub enum AssetInfoBase<T> {
+	Native(String),
+	Cw20(T),
+	Cw1155(T, String),
+}
+```
+The claiming message for a given asset may look like: 
+
+```bash
+./migalood tx wasm execute migaloo14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s58v48z '{"claim_rewards": {"cw20": "migaloo1xr3rq8yvd7qplsw5yx90ftsr2zdhg4e9z60h5duusgxpv72hud3s54xttx"}}' --from new_deploy_wallet --gas auto --gas-adjustment 1.4
+
+```
+In the case of a CW20 token or 
+```bash
+./migalood tx wasm execute migaloo14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s58v48z '{"claim_rewards": {"native": "factory/migaloo1v767q4apajgksqlg5ejdakn8auszecje3yqfw6/fable"}}' --from new_deploy_wallet --gas auto --gas-adjustment 1.4
+```
+
+In the case of a native token
+
+Provided the needed steps for [[Alliance Hub Migaloo#Updating Rewards]] have been performed. All due rewards will be claimed for the requested asset.
+This operation must be repeated for each different asset you may have staked. 
+
+
 
 # Development
 

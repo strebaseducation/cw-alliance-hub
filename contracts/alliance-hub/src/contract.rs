@@ -121,11 +121,11 @@ pub fn execute(
         }
         ExecuteMsg::Unstake(asset) => unstake(deps, info, asset),
         ExecuteMsg::ClaimRewards(asset) => claim_rewards(deps, info, asset),
+        ExecuteMsg::UpdateRewards {} => update_rewards(deps, env, info),
         // ualliance token delegation methods
         ExecuteMsg::AllianceDelegate(msg) => alliance_delegate(deps, env, info, msg),
         ExecuteMsg::AllianceUndelegate(msg) => alliance_undelegate(deps, env, info, msg),
         ExecuteMsg::AllianceRedelegate(msg) => alliance_redelegate(deps, env, info, msg),
-        ExecuteMsg::UpdateRewards {} => update_rewards(deps, env, info),
         ExecuteMsg::UpdateRewardsCallback {} => update_reward_callback(deps, env, info),
         ExecuteMsg::SetAssetRewardDistribution(asset_reward_distribution) => {
             set_asset_reward_distribution(deps, info, asset_reward_distribution)
