@@ -3,12 +3,16 @@
   "title": "InstantiateMsg",
   "type": "object",
   "required": [
+    "alliance_token_denom",
     "controller",
     "governance",
     "oracle",
     "reward_denom"
   ],
   "properties": {
+    "alliance_token_denom": {
+      "type": "string"
+    },
     "controller": {
       "type": "string"
     },

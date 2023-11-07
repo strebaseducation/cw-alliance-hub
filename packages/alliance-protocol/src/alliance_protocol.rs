@@ -1,8 +1,10 @@
 use crate::alliance_oracle_types::ChainId;
 use cosmwasm_schema::{cw_serde, QueryResponses};
 use cosmwasm_std::{Addr, Decimal, Timestamp, Uint128};
+use cw20::Cw20ReceiveMsg;
 use cw_asset::{Asset, AssetInfo};
 use std::collections::{HashMap, HashSet};
+
 #[cw_serde]
 pub struct Config {
     pub governance: Addr,
@@ -24,12 +26,15 @@ pub struct AssetDistribution {
 pub struct InstantiateMsg {
     pub governance: String,
     pub controller: String,
+    pub alliance_token_denom: String,
     pub oracle: String,
     pub reward_denom: String,
 }
 
 #[cw_serde]
 pub enum ExecuteMsg {
+    Receive(Cw20ReceiveMsg),
+
     // Public functions
     Stake {},
     Unstake(Asset),
@@ -45,6 +50,13 @@ pub enum ExecuteMsg {
     AllianceRedelegate(AllianceRedelegateMsg),
     RebalanceEmissions {},
     RebalanceEmissionsCallback {},
+    SetAssetRewardDistribution(Vec<AssetDistribution>),
+}
+
+#[cw_serde]
+pub enum Cw20HookMsg {
+    Stake {},
+    Unstake(Asset),
 }
 
 #[cw_serde]

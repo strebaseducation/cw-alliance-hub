@@ -33,4 +33,7 @@ pub enum ContractError {
 
     #[error("Empty delegation")]
     EmptyDelegation {},
+
+    #[error("Invalid Distribution")]
+    InvalidDistribution {},
 }

@@ -5,11 +5,12 @@ use crate::token_factory::CustomExecuteMsg;
 use alliance_protocol::alliance_oracle_types::ChainId;
 use alliance_protocol::alliance_protocol::{
     AllPendingRewardsQuery, AllianceDelegateMsg, AllianceDelegation, AllianceRedelegateMsg,
-    AllianceRedelegation, AllianceUndelegateMsg, AssetQuery, Config, ExecuteMsg, InstantiateMsg,
-    PendingRewardsRes, QueryMsg, StakedBalanceRes,
+    AllianceRedelegation, AllianceUndelegateMsg, AssetQuery, Config, Cw20HookMsg, ExecuteMsg,
+    InstantiateMsg, PendingRewardsRes, QueryMsg, StakedBalanceRes,
 };
 use cosmwasm_std::testing::{mock_env, mock_info};
-use cosmwasm_std::{coin, from_binary, Deps, DepsMut, Response, StdResult, Uint128};
+use cosmwasm_std::{coin, from_binary, to_binary, Deps, DepsMut, Response, StdResult, Uint128};
+use cw20::Cw20ReceiveMsg;
 use cw_asset::{Asset, AssetInfo};
 use std::collections::HashMap;
 
@@ -23,6 +24,7 @@ pub fn setup_contract(deps: DepsMut) -> Response<CustomExecuteMsg> {
         governance: "gov".to_string(),
         controller: "controller".to_string(),
         oracle: "oracle".to_string(),
+        alliance_token_denom: "ualliance".to_string(),
         reward_denom: "uluna".to_string(),
     };
     instantiate(deps, env, info, init_msg).unwrap()
@@ -62,11 +64,28 @@ pub fn stake(deps: DepsMut, user: &str, amount: u128, denom: &str) -> Response {
     let msg = ExecuteMsg::Stake {};
     execute(deps, env, info, msg).unwrap()
 }
+pub fn stake_cw20(deps: DepsMut, user: &str, amount: u128, denom: &str) -> Response {
+    let info = mock_info(denom, &[]);
+    let env = mock_env();
+    let msg = ExecuteMsg::Receive(Cw20ReceiveMsg {
+        sender: user.to_string(),
+        amount: amount.into(),
+        msg: to_binary(&Cw20HookMsg::Stake {}).unwrap(),
+    });
+    execute(deps, env, info, msg).unwrap()
+}
 
 pub fn unstake(deps: DepsMut, user: &str, amount: u128, denom: &str) -> Response {
     let info = mock_info(user, &[]);
     let env = mock_env();
     let msg = ExecuteMsg::Unstake(Asset::native(denom, amount));
+    execute(deps, env, info, msg).unwrap()
+}
+
+pub fn unstake_cw20(deps: DepsMut, user: &str, amount: u128, denom: &str) -> Response {
+    let info = mock_info(user, &[]);
+    let env = mock_env();
+    let msg = ExecuteMsg::Unstake(Asset::cw20(deps.api.addr_validate(denom).unwrap(), amount));
     execute(deps, env, info, msg).unwrap()
 }
 
