@@ -9,7 +9,7 @@ use alliance_protocol::alliance_protocol::{
 };
 use cosmwasm_std::{
     from_binary, to_binary, Addr, Binary, Coin as CwCoin, CosmosMsg, Decimal, DepsMut, Empty, Env,
-    MessageInfo, Order, Reply, Response, StdError, StdResult, Storage, SubMsg, Timestamp, Uint128,
+    MessageInfo, Reply, Response, StdError, StdResult, Storage, SubMsg, Timestamp, Uint128,
     WasmMsg,
 };
 use cw2::set_contract_version;
@@ -237,7 +237,7 @@ fn remove_assets(
 fn stake(
     deps: DepsMut,
     _env: Env,
-    info: MessageInfo,
+    _info: MessageInfo,
     asset: AssetInfoBase<Addr>,
     amount: Uint128,
     sender: Addr,
@@ -285,7 +285,7 @@ fn stake(
 
     Ok(Response::new().add_attributes(vec![
         ("action", "stake"),
-        ("user", &sender.to_string()),
+        ("user", &sender.as_ref()),
         ("asset", &asset.to_string()),
         ("amount", &amount.to_string()),
     ]))

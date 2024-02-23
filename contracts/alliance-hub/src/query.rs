@@ -47,6 +47,7 @@ fn get_whitelisted_assets(deps: Deps) -> StdResult<Binary> {
     for item in whitelist {
         let (key, chain_id) = item?;
         let asset = key.check(deps.api, None)?;
+        #[allow(clippy::unwrap_or_default)]
         res.entry(chain_id).or_insert_with(Vec::new).push(asset)
     }
 
