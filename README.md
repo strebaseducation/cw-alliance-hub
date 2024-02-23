@@ -1,10 +1,55 @@
 # CW Alliance Hub Migaloo
+# Alliance Hub Migaloo
+
+- [CW Alliance Hub Migaloo](#cw-alliance-hub-migaloo)
+- [Alliance Hub Migaloo](#alliance-hub-migaloo)
+	- [Overview](#overview)
+	- [Deployments and associated information](#deployments-and-associated-information)
+	- [Usage](#usage)
+		- [Intent](#intent)
+			- [For Holders](#for-holders)
+			- [For Chain](#for-chain)
+			- [Contract methods](#contract-methods)
+				- [Instantiate](#instantiate)
+				- [Whitelisting Assets](#whitelisting-assets)
+				- [Reward Distribution](#reward-distribution)
+				- [Updating rewards](#updating-rewards)
+			- [User facing methods](#user-facing-methods)
+				- [Claiming rewards](#claiming-rewards)
+- [Development](#development)
+- [Deployment](#deployment)
+
+
+## Overview
+
+Alliance is an open-source Cosmos SDK module that leverages interchain staking to form economic alliances among blockchains.
+
+🛠 How Alliance works
+Alliance is an [open-source Cosmos SDK module](https://github.com/terra-money/alliance) that leverages interchain staking to form economic alliances among blockchains. The following section is a general outline of the Alliance module. For a detailed overview of how Alliance staking works, visit the [in-depth concepts section](https://docs.alliance.money/concepts/staking).
+
+For the most up-to-date references to Alliance head to Terra's [Alliance Documentation](https://docs.alliance.money/)
+
+This doc will be focused on the Migaloo-based fork which adds support for CW20s and other customizations as well as removing the Oracle based system and replacing it with a more simple Gauge of distribution percentages. This design may be improved at a later point to use Gauges for the reallocation of distributions based on some criteria. For example we could have a number of LP tokens which over time have their weights adjusted either by governance votes or by some other mechanism for example the amount of volume they are providing to the network or the fees. The first system mentioned which includes a Gauge is closely modelled after Curves Gauges system and the second could more akin to Terra's implementation of Alliance with the Oracle system. 
+
+Where to use this contract: [Migaloo Zone](https://app.migaloo.zone/)
+
+## Deployments and associated information
+
+| Label                            | Code ID | Admin                                          | Deployment                                                                                  |
+| -------------------------------- | ------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| MigalooAllianceEcosystemAccelerator | 152      | migaloo190qz7q5fu4079svf890h4h3f8u46ty6cxnlt78eh486k9qm995hquuv9kd | migalood tx wasm execute migaloo190qz7q5fu4079svf890h4h3f8u46ty6cxnlt78eh486k9qm995hquuv9kd |
+
+## Usage 
+
 ### Intent
 
+The Migaloo Alliance module is intended to be used to stimulate the economies of projects by redirecting some inflation to holders who stake their token based on configurable weighting.
+
+#### For Holders
 Stake idle CW20s for redirected inflation through Alliance
 Stake unbonded LP tokens for redirected inflation through Alliance
 
-For Chain
+#### For Chain
 Stimulate the economies of projects by redirecting some inflation to holders who stake their token based on configurable weighting.
 
 #### Contract methods 

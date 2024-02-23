@@ -285,7 +285,7 @@ fn stake(
 
     Ok(Response::new().add_attributes(vec![
         ("action", "stake"),
-        ("user", &sender.as_ref()),
+        ("user", (sender.as_ref())),
         ("asset", &asset.to_string()),
         ("amount", &amount.to_string()),
     ]))
