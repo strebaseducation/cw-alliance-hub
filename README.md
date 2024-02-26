@@ -1,8 +1,8 @@
-# CW Alliance Hub Migaloo
-# Alliance Hub Migaloo
+# CW Alliance Hub Furya
+# Alliance Hub Furya
 
-- [CW Alliance Hub Migaloo](#cw-alliance-hub-migaloo)
-- [Alliance Hub Migaloo](#alliance-hub-migaloo)
+- [CW Alliance Hub Furya](#cw-alliance-hub-furya)
+- [Alliance Hub Furya](#alliance-hub-furya)
 	- [Overview](#overview)
 	- [Deployments and associated information](#deployments-and-associated-information)
 	- [Usage](#usage)
@@ -29,21 +29,21 @@ Alliance is an [open-source Cosmos SDK module](https://github.com/terra-money/al
 
 For the most up-to-date references to Alliance head to Terra's [Alliance Documentation](https://docs.alliance.money/)
 
-This doc will be focused on the Migaloo-based fork which adds support for CW20s and other customizations as well as removing the Oracle based system and replacing it with a more simple Gauge of distribution percentages. This design may be improved at a later point to use Gauges for the reallocation of distributions based on some criteria. For example we could have a number of LP tokens which over time have their weights adjusted either by governance votes or by some other mechanism for example the amount of volume they are providing to the network or the fees. The first system mentioned which includes a Gauge is closely modelled after Curves Gauges system and the second could more akin to Terra's implementation of Alliance with the Oracle system. 
+This doc will be focused on the Furya-based fork which adds support for CW20s and other customizations as well as removing the Oracle based system and replacing it with a more simple Gauge of distribution percentages. This design may be improved at a later point to use Gauges for the reallocation of distributions based on some criteria. For example we could have a number of LP tokens which over time have their weights adjusted either by governance votes or by some other mechanism for example the amount of volume they are providing to the network or the fees. The first system mentioned which includes a Gauge is closely modelled after Curves Gauges system and the second could more akin to Terra's implementation of Alliance with the Oracle system. 
 
-Where to use this contract: [Migaloo Zone](https://app.migaloo.zone/)
+Where to use this contract: [Furya Zone](https://app.furya.zone/)
 
 ## Deployments and associated information
 
 | Label                            | Code ID | Admin                                          | Deployment                                                                                  |
 | -------------------------------- | ------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| MigalooAllianceEcosystemAccelerator | 152      | migaloo190qz7q5fu4079svf890h4h3f8u46ty6cxnlt78eh486k9qm995hquuv9kd | migalood tx wasm execute migaloo190qz7q5fu4079svf890h4h3f8u46ty6cxnlt78eh486k9qm995hquuv9kd |
+| FuryaAllianceEcosystemAccelerator | 145      | furya1hhcd5n88609uyuscxt6l4tqm88lv6963mrqmxmeuq50rcr3l5pqsj3rslm | furyad tx wasm execute furya1hhcd5n88609uyuscxt6l4tqm88lv6963mrqmxmeuq50rcr3l5pqsj3rslm |
 
 ## Usage 
 
 ### Intent
 
-The Migaloo Alliance module is intended to be used to stimulate the economies of projects by redirecting some inflation to holders who stake their token based on configurable weighting.
+The Furya Alliance module is intended to be used to stimulate the economies of projects by redirecting some inflation to holders who stake their token based on configurable weighting.
 
 #### For Holders
 Stake idle CW20s for redirected inflation through Alliance
@@ -78,7 +78,7 @@ Additionally the reward distribution must be set for any whitelisted asset to re
 Whitelisting an asset is done by an admin/governance role and can be done like so: 
 
 ```bash
-./migalood tx wasm execute migaloo14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s58v48z '{ "whitelist_assets": {"test-chain-GKFJpU": [{"cw20": "migaloo1xr3rq8yvd7qplsw5yx90ftsr2zdhg4e9z60h5duusgxpv72hud3s54xttx"}]}' --from new_deploy_wallet --gas auto --gas-adjustment 1.4
+./furyad tx wasm execute furya14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s58v48z '{ "whitelist_assets": {"test-chain-GKFJpU": [{"cw20": "furya1xr3rq8yvd7qplsw5yx90ftsr2zdhg4e9z60h5duusgxpv72hud3s54xttx"}]}' --from new_deploy_wallet --gas auto --gas-adjustment 1.4
 ```
 After which any holders of that asset can now stake and unstake. Rewards will only be accumulated if the asset is also included in the reward_distribution.
 
@@ -117,7 +117,7 @@ pie title ASSET_REWARD_DISTRIBUTION
 A fourth asset is whitelist and the reward distribution is set again: 
 
 ```bash
-./migalood tx wasm execute migaloo14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s58v48z '{"set_asset_reward_distribution": [{"asset": {"native": "factory/addr/fable"}, "distribution": "0.25"}, {"asset":{"cw20":"migaloo1xr3rq8yvd7qplsw5yx90ftsr2zdhg4e9z60h5duusgxpv72hud3s54xttx"}, "distribution": "0.3"}, {"asset": {"cw20":"migaloo1anotherone"}, "distribution": "0.4"}, {"asset": {"native": "factory/migaloo1v767q4apajgksqlg5ejdakn8auszecje3yqfw6/fable"}, "distribution": "0.05"}]}'
+./furyad tx wasm execute furya14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s58v48z '{"set_asset_reward_distribution": [{"asset": {"native": "factory/addr/fable"}, "distribution": "0.25"}, {"asset":{"cw20":"furya1xr3rq8yvd7qplsw5yx90ftsr2zdhg4e9z60h5duusgxpv72hud3s54xttx"}, "distribution": "0.3"}, {"asset": {"cw20":"furya1anotherone"}, "distribution": "0.4"}, {"asset": {"native": "factory/furya1v767q4apajgksqlg5ejdakn8auszecje3yqfw6/fable"}, "distribution": "0.05"}]}'
 ```
 
 The rewards for all assets have been updated at once
@@ -145,7 +145,7 @@ The above actions set an `ASSET_REWARD_RATE` for each asset which is then used w
 #### User facing methods
 
 ##### Claiming rewards 
-Rewards claimable by a staker of a whitelisted asset can claim their earned rewards after the needed steps in [[Alliance Hub Migaloo#Updating Rewards]] have been performed. This should be done on some interval meaning rewards are being accumulated steadily. 
+Rewards claimable by a staker of a whitelisted asset can claim their earned rewards after the needed steps in [[Alliance Hub Furya#Updating Rewards]] have been performed. This should be done on some interval meaning rewards are being accumulated steadily. 
 
 Users in this scenario can claim their rewards one asset per time. 
 
@@ -165,17 +165,17 @@ pub enum AssetInfoBase<T> {
 The claiming message for a given asset may look like: 
 
 ```bash
-./migalood tx wasm execute migaloo14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s58v48z '{"claim_rewards": {"cw20": "migaloo1xr3rq8yvd7qplsw5yx90ftsr2zdhg4e9z60h5duusgxpv72hud3s54xttx"}}' --from new_deploy_wallet --gas auto --gas-adjustment 1.4
+./furyad tx wasm execute furya14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s58v48z '{"claim_rewards": {"cw20": "furya1xr3rq8yvd7qplsw5yx90ftsr2zdhg4e9z60h5duusgxpv72hud3s54xttx"}}' --from new_deploy_wallet --gas auto --gas-adjustment 1.4
 
 ```
 In the case of a CW20 token or 
 ```bash
-./migalood tx wasm execute migaloo14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s58v48z '{"claim_rewards": {"native": "factory/migaloo1v767q4apajgksqlg5ejdakn8auszecje3yqfw6/fable"}}' --from new_deploy_wallet --gas auto --gas-adjustment 1.4
+./furyad tx wasm execute furya14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s58v48z '{"claim_rewards": {"native": "factory/furya1v767q4apajgksqlg5ejdakn8auszecje3yqfw6/fable"}}' --from new_deploy_wallet --gas auto --gas-adjustment 1.4
 ```
 
 In the case of a native token
 
-Provided the needed steps for [[Alliance Hub Migaloo#Updating Rewards]] have been performed. All due rewards will be claimed for the requested asset.
+Provided the needed steps for [[Alliance Hub Furya#Updating Rewards]] have been performed. All due rewards will be claimed for the requested asset.
 This operation must be repeated for each different asset you may have staked. 
 
 
