@@ -52,13 +52,13 @@ pub fn instantiate(
     let governance_address = deps.api.addr_validate(msg.governance.as_str())?;
     let controller_address = deps.api.addr_validate(msg.controller.as_str())?;
     let oracle_address = deps.api.addr_validate(msg.oracle.as_str())?;
-    let create_msg = TokenExecuteMsg::CreateDenom {
-        subdenom: msg.alliance_token_denom.to_string(),
-    };
-    let sub_msg = SubMsg::reply_on_success(
-        CosmosMsg::Custom(CustomExecuteMsg::Token(create_msg)),
-        CREATE_REPLY_ID,
-    );
+    // let create_msg = TokenExecuteMsg::CreateDenom {
+//         subdenom: msg.alliance_token_denom.to_string(),
+//     };
+//     let sub_msg = SubMsg::reply_on_success(
+//         CosmosMsg::Custom(CustomExecuteMsg::Token(create_msg)),
+//         CREATE_REPLY_ID,
+//     );
 
     // We set asset_reward_distribution here or manually via an execute method otherwise there is no distribution ratio
     // asset_reward_distribution is a list of AssetDistribution which is a struct that contains an AssetInfo and a Decimal.
@@ -77,7 +77,7 @@ pub fn instantiate(
         governance: governance_address,
         controller: controller_address,
         oracle: oracle_address,
-        alliance_token_denom: "".to_string(),
+        alliance_token_denom: "furya1v4yfudf0ugrs3hf3vlzxjjg4lk0u304prncfeqfvk949zlfv538qnfyudw".to_string(),
         alliance_token_supply: Uint128::zero(),
         last_reward_update_timestamp: Timestamp::default(),
         reward_denom: msg.reward_denom,
