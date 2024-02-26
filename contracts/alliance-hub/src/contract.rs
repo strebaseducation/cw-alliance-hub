@@ -87,6 +87,7 @@ pub fn instantiate(
     VALIDATORS.save(deps.storage, &HashSet::new())?;
     Ok(Response::new()
         .add_attributes(vec![("action", "instantiate")])
+        )
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
